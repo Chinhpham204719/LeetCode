@@ -1,0 +1,42 @@
+typedef vector <int> vi;
+class Solution {
+public:
+    void dfs(int i, vi &a, vi &b, vi &c, int u1, int u2, int cnt1, int cnt2, double &ret) {
+        if (cnt1 > N / 2 || cnt2 > N / 2) 
+            return ; // amounts are off, early cut off
+        if (i == a.size()) {
+            if (u1 != u2) 
+                return ; // disntincts are off
+            ret += comb(b) * comb(c); // get combinations from box1 and box2
+            return ;
+        }
+        for (int x = 0; x <= a[i]; x++) {
+            b[i] = x; c[i] = a[i] - x;
+            dfs(i + 1, a, b, c, u1 + (b[i] > 0), u2 + (c[i] > 0), cnt1 + b[i], cnt2 + c[i], ret);
+        }
+    }
+    double getProbability(vector<int>& a) {
+        init(a);
+        vector <int> b(n), c(n);
+        double ret = 0.0;
+        dfs(0, a, b, c, 0, 0, 0, 0, ret);
+        return ret / comb(a);
+    }
+private:
+    int N = 0, n = 0;
+    double fact[50];
+    void init(vector <int> &a) {
+        n = a.size();
+        N = accumulate(a.begin(), a.end(), 0);
+        fact[0] = fact[1] = 1.0;
+        for (int i = 2; i < 50; i++) 
+            fact[i] = fact[i - 1] * i;
+    }
+    double comb(vi &a) {
+        int n = accumulate(a.begin(), a.end(), 0);
+        double ret = fact[n];
+        for (auto x : a)
+            ret /= fact[x];
+        return ret;
+    }
+};
