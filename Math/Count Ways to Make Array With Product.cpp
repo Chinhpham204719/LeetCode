@@ -1,26 +1,32 @@
-int comb[10013][14] = { 1 }, mod = 1000000007;
-int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 
-                53, 59, 61, 67, 71, 73, 79, 83, 89, 97};
 class Solution {
-public:
-vector<int> waysToFillArray(vector<vector<int>>& qs) {
-    if (comb[1][1] == 0)
-        for (int n = 1; n < 10013; ++n)
-            for (int r = 0; r < 14; ++r)
-                comb[n][r] = r == 0 ? 1 : (comb[n - 1][r - 1] + comb[n - 1][r]) % mod;
-    vector<int> res(qs.size(), 1);
-    for (auto i = 0; i < qs.size(); ++i) {
-        int n = qs[i][0], k = qs[i][1];
-        for (auto p : primes) {
-            int r = 0;
-            while (k % p == 0) {
-                ++r;
-                k /= p;
-            }
-            res[i] = (long)res[i] * comb[n - 1 + r][r] % mod;
-        }
-        if (k != 1)
-            res[i] = (long)res[i] * n % mod;
+    int MOD = 1e9 + 7; 
+    int dp[10004][21]; 
+    int recursive(int n,int k){ 
+        if(k == 0) return 1; // this is a valid way of distribution
+        if(n == 0) return 0; 
+        if(dp[n][k] != -1) return dp[n][k]; 
+        return dp[n][k] = (recursive(n,k-1) + recursive(n-1,k))%MOD;
     }
-    return res;
-}
+public:
+    vector<int> waysToFillArray(vector<vector<int>>& queries) {
+        for(int i=0;i<10004;i+=1) for(int j=0;j<21;j+=1) dp[i][j] = -1; recursive(10003,20); 
+        vector<int> res; 
+        for(auto &q: queries){
+            int n = q[0]; 
+            int k = q[1]; 
+            // find prime factorizatio of k then work forward 
+            map<int,int> mp; 
+            for(int i=2;i*i<=k;i+=1){
+                while(q[1]%i == 0) q[1]/=i,mp[i] += 1; 
+            }
+            if(q[1] != 1) mp[q[1]] += 1; 
+            long long ans = 1; 
+            for(auto &[elm,freq]: mp){
+                ans *= dp[n][freq]; 
+                ans %= MOD; 
+            }
+            res.push_back(ans); 
+        }
+        return res;
+    }
+};
